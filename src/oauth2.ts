@@ -68,6 +68,7 @@ type VerifyFunction<T, U = any> = (
  * @api public
  */
 class Strategy<T = any, U = any, Y extends { forceVerify: boolean } = any> extends OAuthStrategyWithPEM<T, U> {
+	private readonly __userProfileURL: string;
 	constructor(options: InputStrategyOptions, verify: VerifyFunction<T, U>) {
 		options = options || {};
 		options.authorizationURL = options.authorizationURL || "https://id.twitch.tv/oauth2/authorize";
@@ -80,6 +81,7 @@ class Strategy<T = any, U = any, Y extends { forceVerify: boolean } = any> exten
 		this.pem = options.pem;
 		this._oauth2.setAuthMethod("Bearer");
 		this._oauth2.useAuthorizationHeaderforGET(true);
+		this.__userProfileURL  = "https://api.twitch.tv/helix/users";
 	}
 
 	/**
@@ -97,7 +99,7 @@ class Strategy<T = any, U = any, Y extends { forceVerify: boolean } = any> exten
 	 * @api protected
 	 */
 	public userProfile(accessToken: string, done: (e: InternalOAuthError | null, payload?: UserProfile) => void) {
-		this._oauth2.get("https://api.twitch.tv/helix/users", accessToken, function (err, body, res) {
+		this._oauth2.get(this.__userProfileURL, accessToken, function (err, body, res) {
 			if (err) {
 				return done(new InternalOAuthError("failed to fetch user profile", err));
 			}
